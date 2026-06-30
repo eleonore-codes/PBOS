@@ -1,0 +1,19 @@
+<mxfile host="app.diagrams.net" modified="2026-06-30T12:00:00.000Z" agent="PBOS" version="27.0.9">
+  <diagram id="PBOSValueEngine" name="PBOS Value Engine">
+    <mxGraphModel dx="1200" dy="800" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="900" math="0" shadow="0">
+      <root>
+        <mxCell id="0"/>
+        <mxCell id="1" parent="0"/>
+
+        <mxCell id="title"
+          value="PBOS Value Engine&#10;Architecture Draft v0.1&#10;&#10;See PBOS_Value_Engine.md&#10;and PBOS_Value_Engine_Specification.md"
+          style="rounded=1;whiteSpace=wrap;html=1;fillColor=#EAF3FF;strokeColor=#1F5E9C;fontSize=18;fontStyle=1;"
+          vertex="1"
+          parent="1">
+          <mxGeometry x="450" y="250" width="700" height="180" as="geometry"/>
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
