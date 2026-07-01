@@ -1,0 +1,2 @@
+-- PBHS MVP migration setup placeholder.
+-- Domain tables are deferred until persistence behavior enters scope.

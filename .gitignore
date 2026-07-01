@@ -216,3 +216,18 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+
+# Node / frontend
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Vite / TypeScript
+Implementation/Frontend/dist/
+Implementation/Shared/typescript/dist/
+
+# Local PBHS data
+Implementation/Database/*.sqlite
+Implementation/Database/*.sqlite3

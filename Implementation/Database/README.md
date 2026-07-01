@@ -22,3 +22,14 @@ The primary source for database design is:
 
 ```text
 Architecture/Domain_Model/
+```
+
+---
+
+# PBHS MVP Setup
+
+M1 creates the migration location only. Tables are intentionally deferred until persistence behavior enters scope, so schema changes can follow the PBHS MVP data contract directly.
+
+## Structure
+
+- `migrations/` contains ordered SQL migrations.
