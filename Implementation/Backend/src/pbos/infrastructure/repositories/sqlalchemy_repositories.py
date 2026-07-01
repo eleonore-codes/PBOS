@@ -8,11 +8,13 @@ from pbos.domain.enums import EvidenceSource, QuestionStatus
 from pbos.domain.repositories import (
     AssessmentRepository,
     BusinessRepository,
+    CapabilityScoreRepository,
     EvidenceRepository,
     QuestionRepository,
 )
 from pbos.infrastructure.database.models import (
     Business,
+    CapabilityScore,
     EvidenceItem,
     PBHSAssessment,
     PBHSAssessmentQuestion,
@@ -152,3 +154,32 @@ class SqlAlchemyEvidenceRepository(EvidenceRepository):
             confidence=1.0,
         )
         return self.add(evidence)
+
+
+class SqlAlchemyCapabilityScoreRepository(CapabilityScoreRepository):
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    def add(self, capability_score: CapabilityScore) -> CapabilityScore:
+        self.session.add(capability_score)
+        self.session.flush()
+        return capability_score
+
+    def list_for_assessment(self, assessment_id: UUID) -> list[CapabilityScore]:
+        statement = (
+            select(CapabilityScore)
+            .where(CapabilityScore.assessment_id == coerce_uuid(assessment_id))
+            .order_by(CapabilityScore.capability)
+        )
+        return list(self.session.scalars(statement))
+
+    def get_for_capability(
+        self,
+        assessment_id: UUID,
+        capability: str,
+    ) -> CapabilityScore | None:
+        statement = select(CapabilityScore).where(
+            CapabilityScore.assessment_id == coerce_uuid(assessment_id),
+            CapabilityScore.capability == capability,
+        )
+        return self.session.scalars(statement).first()

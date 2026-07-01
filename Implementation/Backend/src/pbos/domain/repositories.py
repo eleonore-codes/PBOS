@@ -7,6 +7,7 @@ from uuid import UUID
 if TYPE_CHECKING:
     from pbos.infrastructure.database.models import (
         Business,
+        CapabilityScore,
         EvidenceItem,
         PBHSAssessment,
         PBHSQuestion,
@@ -71,4 +72,22 @@ class EvidenceRepository(ABC):
         related_capability: str,
         evidence_value: Any,
     ) -> EvidenceItem:
+        raise NotImplementedError
+
+
+class CapabilityScoreRepository(ABC):
+    @abstractmethod
+    def add(self, capability_score: CapabilityScore) -> CapabilityScore:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_for_assessment(self, assessment_id: UUID) -> list[CapabilityScore]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_for_capability(
+        self,
+        assessment_id: UUID,
+        capability: str,
+    ) -> CapabilityScore | None:
         raise NotImplementedError

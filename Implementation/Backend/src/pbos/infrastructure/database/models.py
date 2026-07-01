@@ -67,6 +67,10 @@ class PBHSAssessment(Base):
     )
     created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now)
     completed_at: Mapped[datetime | None] = mapped_column(DateTime)
+    overall_score: Mapped[float | None] = mapped_column()
+    overall_confidence: Mapped[float | None] = mapped_column()
+    scoring_method: Mapped[str | None] = mapped_column(String(100))
+    scored_at: Mapped[datetime | None] = mapped_column(DateTime)
 
     business: Mapped[Business] = relationship(back_populates="assessments")
     assessment_questions: Mapped[list["PBHSAssessmentQuestion"]] = relationship(
@@ -75,6 +79,10 @@ class PBHSAssessment(Base):
     )
     responses: Mapped[list["PBHSResponse"]] = relationship(back_populates="assessment")
     evidence_items: Mapped[list["EvidenceItem"]] = relationship(back_populates="assessment")
+    capability_scores: Mapped[list["CapabilityScore"]] = relationship(
+        back_populates="assessment",
+        cascade="all, delete-orphan",
+    )
 
 
 class PBHSQuestion(Base):
@@ -190,6 +198,41 @@ class EvidenceItem(Base):
 
     assessment: Mapped[PBHSAssessment] = relationship(back_populates="evidence_items")
     response: Mapped[PBHSResponse | None] = relationship(back_populates="evidence_items")
+
+
+class CapabilityScore(Base):
+    __tablename__ = "capability_scores"
+    __table_args__ = (
+        CheckConstraint("score >= 0.0 AND score <= 100.0", name="capability_score_range"),
+        CheckConstraint(
+            "confidence >= 0.0 AND confidence <= 1.0",
+            name="capability_confidence_range",
+        ),
+        CheckConstraint("maturity_level >= 1 AND maturity_level <= 5", name="maturity_level_range"),
+        UniqueConstraint(
+            "assessment_id",
+            "capability",
+            name="uq_capability_scores_assessment_capability",
+        ),
+        Index("ix_capability_scores_assessment_capability", "assessment_id", "capability"),
+    )
+
+    capability_score_id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=new_uuid
+    )
+    assessment_id: Mapped[str] = mapped_column(
+        ForeignKey("pbhs_assessments.assessment_id"), nullable=False, index=True
+    )
+    capability: Mapped[str] = mapped_column(String(150), nullable=False)
+    score: Mapped[float] = mapped_column(nullable=False)
+    maturity_level: Mapped[int] = mapped_column(nullable=False)
+    confidence: Mapped[float] = mapped_column(nullable=False)
+    calculation_method: Mapped[str] = mapped_column(String(100), nullable=False)
+    evidence_ids: Mapped[list[str]] = mapped_column(JSON, nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now)
+    scored_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now)
+
+    assessment: Mapped[PBHSAssessment] = relationship(back_populates="capability_scores")
 
 
 def coerce_uuid(value: UUID | str) -> str:

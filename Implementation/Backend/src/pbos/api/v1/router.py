@@ -9,6 +9,7 @@ from pbos.api.v1.schemas import (
     AssessmentProgressRead,
     AssessmentQuestionRead,
     AssessmentRead,
+    AssessmentScoreRead,
     BusinessCreate,
     BusinessRead,
     EvidenceRead,
@@ -28,6 +29,7 @@ from pbos.infrastructure.repositories.sqlalchemy_repositories import (
     SqlAlchemyQuestionRepository,
 )
 from pbos.services.assessment_service import AssessmentService
+from pbos.services.scoring_service import ScoringService
 
 api_v1_router = APIRouter()
 
@@ -40,6 +42,10 @@ def assessment_error_status(detail: str) -> int:
         "invalid_status_transition",
         "assessment_incomplete",
         "assessment_has_no_required_questions",
+        "assessment_not_submitted",
+        "assessment_not_scored",
+        "missing_required_evidence",
+        "capability_has_no_scoreable_responses",
     }:
         return status.HTTP_409_CONFLICT
     return status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -206,3 +212,19 @@ def list_assessment_evidence(
     session: Session = Depends(get_session),
 ):
     return SqlAlchemyEvidenceRepository(session).list_for_assessment(assessment_id)
+
+
+@api_v1_router.post("/assessments/{assessment_id}/score", response_model=AssessmentScoreRead)
+def score_assessment(assessment_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return ScoringService(session).score_assessment(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.get("/assessments/{assessment_id}/scores", response_model=AssessmentScoreRead)
+def get_assessment_scores(assessment_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return ScoringService(session).get_scores(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc

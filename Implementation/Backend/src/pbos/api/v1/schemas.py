@@ -148,3 +148,25 @@ class EvidenceRead(BaseModel):
 class ResponseSubmissionRead(BaseModel):
     response: ResponseRead
     evidence: EvidenceRead
+
+
+class CapabilityScoreRead(BaseModel):
+    capability_score_id: str
+    assessment_id: str
+    capability: str
+    score: float
+    maturity_level: int
+    confidence: float
+    calculation_method: str
+    evidence_ids: list[str]
+    scored_at: datetime
+
+
+class AssessmentScoreRead(BaseModel):
+    assessment_id: str
+    status: AssessmentStatus
+    overall_score: float
+    overall_confidence: float
+    calculation_method: str
+    scored_at: datetime
+    capability_scores: list[CapabilityScoreRead]
