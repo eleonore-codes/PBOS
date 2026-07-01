@@ -4,9 +4,10 @@ import { describe, expect, it } from "vitest";
 import { App } from "./App";
 
 describe("App", () => {
-  it("renders the project shell", () => {
+  it("renders the founder dashboard", () => {
     render(<App />);
 
-    expect(screen.getByRole("main", { name: /pbhs mvp application shell/i })).toBeInTheDocument();
+    expect(screen.getByRole("main", { name: /founder dashboard/i })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: /creatingreorganized/i })).toBeInTheDocument();
   });
 });

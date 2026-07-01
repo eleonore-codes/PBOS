@@ -1,13 +1,592 @@
+import { useEffect, useMemo, useState } from "react";
+
 import "./styles.css";
 
-export function App() {
+type AssessmentStatus =
+  | "draft"
+  | "submitted"
+  | "scored"
+  | "recommendations_generated"
+  | "reviewed"
+  | "reported";
+
+type CapabilityScore = {
+  capability: string;
+  score: number;
+  maturity_level: number;
+  confidence: number;
+};
+
+type Recommendation = {
+  recommendation_id: string;
+  title: string;
+  description: string;
+  priority: string;
+  priority_score: number;
+  confidence: number;
+  confidence_label: string;
+  risk_score: number;
+  risk_label: string;
+  expected_business_return: Record<string, unknown>;
+  expected_life_return: Record<string, unknown>;
+  human_time_required: Record<string, unknown>;
+  triggered_capabilities: string[];
+  capability_score_ids?: string[];
+  supporting_evidence_ids?: string[];
+  rationale: Record<string, unknown>;
+  calculation_trace: Record<string, unknown>;
+  recommended_execution_path: string;
+};
+
+type DashboardData = {
+  source: "api" | "demo";
+  businessName: string;
+  assessmentStatus: AssessmentStatus;
+  progressPercent: number;
+  overallScore: number;
+  overallConfidence: number;
+  scoredAt: string;
+  capabilityScores: CapabilityScore[];
+  recommendations: Recommendation[];
+  recentActivity: string[];
+};
+
+const demoCapabilities: CapabilityScore[] = [
+  { capability: "Human Signature", score: 84, maturity_level: 4, confidence: 0.86 },
+  { capability: "Knowledge Assets", score: 62, maturity_level: 3, confidence: 0.78 },
+  { capability: "Podcast Assets", score: 74, maturity_level: 3, confidence: 0.82 },
+  { capability: "Trust", score: 78, maturity_level: 4, confidence: 0.8 },
+  { capability: "Business Systems", score: 48, maturity_level: 2, confidence: 0.74 },
+  { capability: "AI Leverage", score: 55, maturity_level: 2, confidence: 0.72 },
+  { capability: "Business Return", score: 58, maturity_level: 2, confidence: 0.77 },
+  { capability: "Life Return", score: 67, maturity_level: 3, confidence: 0.79 },
+];
+
+const demoRecommendations: Recommendation[] = [
+  {
+    recommendation_id: "demo-knowledge-library",
+    title: "Build a reusable knowledge library",
+    description: "Turn founder expertise into structured assets that support content and delivery.",
+    priority: "High",
+    priority_score: 87,
+    confidence: 0.82,
+    confidence_label: "High",
+    risk_score: 0.26,
+    risk_label: "Low",
+    expected_business_return: { score: 82, label: "High" },
+    expected_life_return: { score: 74, label: "Good" },
+    human_time_required: { estimated_hours_required: { min: 8, max: 14 } },
+    triggered_capabilities: ["Knowledge Assets", "Business Systems"],
+    rationale: { why_generated: "Knowledge Assets and Business Systems constrain repeatability." },
+    calculation_trace: { source: "Demo data; use ?assessmentId=<id> for Core v1 API data." },
+    recommended_execution_path: "DIY",
+  },
+  {
+    recommendation_id: "demo-automation",
+    title: "Automate one recurring delivery workflow",
+    description: "Reduce founder dependency by standardizing a high-frequency operational process.",
+    priority: "High",
+    priority_score: 81,
+    confidence: 0.76,
+    confidence_label: "Medium",
+    risk_score: 0.34,
+    risk_label: "Medium",
+    expected_business_return: { score: 76, label: "Good" },
+    expected_life_return: { score: 84, label: "High" },
+    human_time_required: { estimated_hours_required: { min: 6, max: 10 } },
+    triggered_capabilities: ["Business Systems", "AI Leverage", "Life Return"],
+    rationale: { why_generated: "Business Systems and AI Leverage show practical improvement potential." },
+    calculation_trace: { source: "Demo data; use ?assessmentId=<id> for Core v1 API data." },
+    recommended_execution_path: "DWY",
+  },
+  {
+    recommendation_id: "demo-content-system",
+    title: "Create a podcast-to-trust content system",
+    description: "Convert podcast assets into repeatable trust-building touchpoints.",
+    priority: "Medium",
+    priority_score: 72,
+    confidence: 0.79,
+    confidence_label: "Medium",
+    risk_score: 0.22,
+    risk_label: "Low",
+    expected_business_return: { score: 79, label: "Good" },
+    expected_life_return: { score: 68, label: "Good" },
+    human_time_required: { estimated_hours_required: { min: 5, max: 9 } },
+    triggered_capabilities: ["Podcast Assets", "Trust"],
+    rationale: { why_generated: "Podcast Assets are healthy enough to become a stronger trust engine." },
+    calculation_trace: { source: "Demo data; use ?assessmentId=<id> for Core v1 API data." },
+    recommended_execution_path: "DIY",
+  },
+];
+
+const demoDashboard: DashboardData = {
+  source: "demo",
+  businessName: "CreatingReorganized",
+  assessmentStatus: "recommendations_generated",
+  progressPercent: 100,
+  overallScore: 66,
+  overallConfidence: 0.79,
+  scoredAt: "Demo assessment",
+  capabilityScores: demoCapabilities,
+  recommendations: demoRecommendations,
+  recentActivity: [
+    "Demo assessment scored",
+    "Demo recommendations generated",
+    "Evidence trace available per capability",
+  ],
+};
+
+const apiBaseUrl = import.meta.env.VITE_PBOS_API_BASE_URL ?? "/api/v1";
+
+function formatPercent(value: number) {
+  return `${Math.round(value * 100)}%`;
+}
+
+function statusLabel(status: AssessmentStatus) {
+  return status.replace(/_/g, " ");
+}
+
+function scoreTone(score: number) {
+  if (score >= 85) return "excellent";
+  if (score >= 70) return "good";
+  if (score >= 50) return "attention";
+  return "critical";
+}
+
+function getNumericScore(value: Record<string, unknown>) {
+  const score = value.score;
+  return typeof score === "number" ? score : undefined;
+}
+
+function getHours(value: Record<string, unknown>) {
+  const estimate = value.estimated_hours_required;
+  if (
+    estimate &&
+    typeof estimate === "object" &&
+    "min" in estimate &&
+    "max" in estimate &&
+    typeof estimate.min === "number" &&
+    typeof estimate.max === "number"
+  ) {
+    return `${estimate.min}-${estimate.max}h`;
+  }
+  return "Trace";
+}
+
+function average(values: number[]) {
+  if (values.length === 0) return 0;
+  return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+async function getJson<T>(path: string): Promise<T> {
+  const response = await fetch(`${apiBaseUrl}${path}`);
+  if (!response.ok) {
+    throw new Error(`Request failed: ${path}`);
+  }
+  return response.json() as Promise<T>;
+}
+
+function useDashboardData() {
+  const [data, setData] = useState<DashboardData>(demoDashboard);
+  const [error, setError] = useState<string | null>(null);
+  const assessmentId = new URLSearchParams(window.location.search).get("assessmentId");
+
+  useEffect(() => {
+    if (!assessmentId) return;
+
+    let cancelled = false;
+
+    async function loadDashboardData() {
+      try {
+        const [assessment, progress, scores, recommendations] = await Promise.all([
+          getJson<{
+            status: AssessmentStatus;
+            completed_at: string | null;
+            created_at: string;
+          }>(`/assessments/${assessmentId}`),
+          getJson<{ percent_complete: number }>(`/assessments/${assessmentId}/progress`),
+          getJson<{
+            overall_score: number;
+            overall_confidence: number;
+            scored_at: string;
+            capability_scores: CapabilityScore[];
+          }>(`/assessments/${assessmentId}/scores`),
+          getJson<Recommendation[]>(`/assessments/${assessmentId}/recommendations`).catch(
+            () => [] as Recommendation[],
+          ),
+        ]);
+
+        if (cancelled) return;
+
+        setData({
+          source: "api",
+          businessName: "PBOS Founder Dashboard",
+          assessmentStatus: assessment.status,
+          progressPercent: progress.percent_complete,
+          overallScore: Math.round(scores.overall_score),
+          overallConfidence: scores.overall_confidence,
+          scoredAt: new Date(scores.scored_at).toLocaleString(),
+          capabilityScores: scores.capability_scores,
+          recommendations,
+          recentActivity: [
+            `Assessment ${statusLabel(assessment.status)}`,
+            `Scored ${new Date(scores.scored_at).toLocaleString()}`,
+            `${recommendations.length} recommendations available`,
+          ],
+        });
+        setError(null);
+      } catch {
+        if (!cancelled) {
+          setData(demoDashboard);
+          setError("Core v1 data could not be loaded. Showing labeled demo data.");
+        }
+      }
+    }
+
+    void loadDashboardData();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [assessmentId]);
+
+  return { data, error, assessmentId };
+}
+
+function RadarPlaceholder({ capabilities }: { capabilities: CapabilityScore[] }) {
+  const points = capabilities
+    .map((capability, index) => {
+      const angle = (Math.PI * 2 * index) / capabilities.length - Math.PI / 2;
+      const radius = 22 + (capability.score / 100) * 78;
+      return `${110 + Math.cos(angle) * radius},${110 + Math.sin(angle) * radius}`;
+    })
+    .join(" ");
+
   return (
-    <main className="app-shell" aria-label="PBHS MVP application shell">
-      <section className="app-shell__panel">
-        <p className="app-shell__eyebrow">PBOS</p>
-        <h1>PBHS MVP</h1>
-        <p>Project skeleton ready for the next implementation milestone.</p>
+    <div className="radar-card" aria-label="Capability radar chart">
+      <svg viewBox="0 0 220 220" role="img" aria-label="Radar chart of capability scores">
+        <circle cx="110" cy="110" r="94" />
+        <circle cx="110" cy="110" r="62" />
+        <circle cx="110" cy="110" r="31" />
+        {capabilities.map((_, index) => {
+          const angle = (Math.PI * 2 * index) / capabilities.length - Math.PI / 2;
+          return (
+            <line
+              key={index}
+              x1="110"
+              y1="110"
+              x2={110 + Math.cos(angle) * 96}
+              y2={110 + Math.sin(angle) * 96}
+            />
+          );
+        })}
+        <polygon points={points} />
+      </svg>
+    </div>
+  );
+}
+
+function MetricCard({
+  title,
+  value,
+  detail,
+  tone = "neutral",
+}: {
+  title: string;
+  value: string;
+  detail: string;
+  tone?: "neutral" | "excellent" | "good" | "attention" | "critical";
+}) {
+  return (
+    <section className={`metric-card metric-card--${tone}`}>
+      <p>{title}</p>
+      <strong>{value}</strong>
+      <span>{detail}</span>
+    </section>
+  );
+}
+
+export function App() {
+  const { data, error, assessmentId } = useDashboardData();
+  const [selectedRecommendation, setSelectedRecommendation] = useState<Recommendation | null>(null);
+
+  const strongest = useMemo(
+    () => [...data.capabilityScores].sort((first, second) => second.score - first.score)[0],
+    [data.capabilityScores],
+  );
+  const weakest = useMemo(
+    () => [...data.capabilityScores].sort((first, second) => first.score - second.score)[0],
+    [data.capabilityScores],
+  );
+  const topRecommendations = useMemo(
+    () =>
+      [...data.recommendations]
+        .sort((first, second) => second.priority_score - first.priority_score)
+        .slice(0, 3),
+    [data.recommendations],
+  );
+  const businessReturn = average(
+    data.recommendations
+      .map((recommendation) => getNumericScore(recommendation.expected_business_return))
+      .filter((score): score is number => typeof score === "number"),
+  );
+  const lifeReturn = average(
+    data.recommendations
+      .map((recommendation) => getNumericScore(recommendation.expected_life_return))
+      .filter((score): score is number => typeof score === "number"),
+  );
+
+  return (
+    <main className="founder-dashboard" aria-label="Founder Dashboard">
+      <aside className="sidebar">
+        <img
+          className="sidebar__logo"
+          src="/creatingreorganized-logo.svg"
+          alt="CreatingReorganized"
+        />
+        <nav aria-label="Primary navigation">
+          {["Dashboard", "Businesses", "Assessments", "Scores", "Recommendations", "Settings"].map(
+            (item) => (
+              <a className={item === "Dashboard" ? "active" : undefined} href="#" key={item}>
+                {item}
+              </a>
+            ),
+          )}
+        </nav>
+      </aside>
+
+      <section className="dashboard-content">
+        <header className="topbar">
+          <div>
+            <p className="eyebrow">Founder Dashboard</p>
+            <h1>{data.businessName}</h1>
+          </div>
+          <div className="topbar__meta">
+            <span className="status-pill">{statusLabel(data.assessmentStatus)}</span>
+            <span>{data.scoredAt}</span>
+          </div>
+        </header>
+
+        {(data.source === "demo" || error) && (
+          <div className="demo-banner" role="status">
+            {error ?? "Demo data: add ?assessmentId=<id> to load PBHS Core v1 assessment data."}
+          </div>
+        )}
+
+        <section className="hero-grid" aria-label="Business health summary">
+          <section className={`score-hero score-hero--${scoreTone(data.overallScore)}`}>
+            <p>Overall PBHS Score</p>
+            <div>
+              <strong>{data.overallScore}</strong>
+              <span>/100</span>
+            </div>
+            <small>Confidence {formatPercent(data.overallConfidence)}</small>
+          </section>
+          <MetricCard
+            title="Business Return"
+            value={businessReturn ? `${businessReturn}` : "Trace"}
+            detail="Expected return from recommendations"
+            tone={businessReturn ? scoreTone(businessReturn) : "neutral"}
+          />
+          <MetricCard
+            title="Life Return"
+            value={lifeReturn ? `${lifeReturn}` : "Trace"}
+            detail="Founder-life value from recommendations"
+            tone={lifeReturn ? scoreTone(lifeReturn) : "neutral"}
+          />
+          <MetricCard
+            title="Confidence"
+            value={formatPercent(data.overallConfidence)}
+            detail="Evidence-backed certainty"
+            tone="good"
+          />
+          <MetricCard
+            title="Assessment Status"
+            value={`${Math.round(data.progressPercent)}%`}
+            detail={statusLabel(data.assessmentStatus)}
+            tone="neutral"
+          />
+        </section>
+
+        <section className="insight-grid">
+          <section className="panel panel--wide">
+            <div className="panel__header">
+              <div>
+                <p className="eyebrow">Capability Pattern</p>
+                <h2>Radar overview</h2>
+              </div>
+              <span>8 capabilities</span>
+            </div>
+            <RadarPlaceholder capabilities={data.capabilityScores} />
+          </section>
+
+          <section className="signal-stack">
+            <MetricCard
+              title="Weakest Capability"
+              value={weakest?.capability ?? "Unavailable"}
+              detail={weakest ? `${weakest.score}/100, confidence ${formatPercent(weakest.confidence)}` : ""}
+              tone={weakest ? scoreTone(weakest.score) : "neutral"}
+            />
+            <MetricCard
+              title="Strongest Capability"
+              value={strongest?.capability ?? "Unavailable"}
+              detail={
+                strongest ? `${strongest.score}/100, confidence ${formatPercent(strongest.confidence)}` : ""
+              }
+              tone={strongest ? scoreTone(strongest.score) : "neutral"}
+            />
+          </section>
+        </section>
+
+        <section className="panel">
+          <div className="panel__header">
+            <div>
+              <p className="eyebrow">Capability Scores</p>
+              <h2>Operating health</h2>
+            </div>
+          </div>
+          <div className="capability-grid">
+            {data.capabilityScores.map((capability) => (
+              <article className="capability-card" key={capability.capability}>
+                <div>
+                  <h3>{capability.capability}</h3>
+                  <span>Maturity {capability.maturity_level}</span>
+                </div>
+                <strong>{Math.round(capability.score)}</strong>
+                <div className="progress-track">
+                  <div
+                    className={`progress-fill progress-fill--${scoreTone(capability.score)}`}
+                    style={{ width: `${capability.score}%` }}
+                  />
+                </div>
+                <small>Confidence {formatPercent(capability.confidence)}</small>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="bottom-grid">
+          <section className="panel">
+            <div className="panel__header">
+              <div>
+                <p className="eyebrow">Top 3</p>
+                <h2>Latest recommendations</h2>
+              </div>
+            </div>
+            <div className="recommendation-list">
+              {topRecommendations.map((recommendation) => (
+                <button
+                  className="recommendation-row"
+                  key={recommendation.recommendation_id}
+                  onClick={() => setSelectedRecommendation(recommendation)}
+                  type="button"
+                >
+                  <span>
+                    <strong>{recommendation.title}</strong>
+                    <small>
+                      {recommendation.priority} priority | {recommendation.recommended_execution_path}
+                    </small>
+                  </span>
+                  <span>{Math.round(recommendation.priority_score)}</span>
+                </button>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel">
+            <div className="panel__header">
+              <div>
+                <p className="eyebrow">Founder Load</p>
+                <h2>Human time</h2>
+              </div>
+            </div>
+            <div className="time-stack">
+              {topRecommendations.map((recommendation) => (
+                <div key={recommendation.recommendation_id}>
+                  <span>{recommendation.title}</span>
+                  <strong>{getHours(recommendation.human_time_required)}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          <section className="panel">
+            <div className="panel__header">
+              <div>
+                <p className="eyebrow">Activity</p>
+                <h2>Recent activity</h2>
+              </div>
+            </div>
+            <ol className="activity-list">
+              {data.recentActivity.map((item) => (
+                <li key={item}>{item}</li>
+              ))}
+              {!assessmentId && <li>API activity appears when an assessment is loaded.</li>}
+            </ol>
+          </section>
+        </section>
       </section>
+
+      {selectedRecommendation && (
+        <aside className="detail-panel" aria-label="Recommendation detail">
+          <button type="button" onClick={() => setSelectedRecommendation(null)}>
+            Close
+          </button>
+          <p className="eyebrow">Recommendation Detail</p>
+          <h2>{selectedRecommendation.title}</h2>
+          <p>{selectedRecommendation.description}</p>
+          <dl>
+            <div>
+              <dt>Priority</dt>
+              <dd>
+                {selectedRecommendation.priority} ({Math.round(selectedRecommendation.priority_score)})
+              </dd>
+            </div>
+            <div>
+              <dt>Business Return</dt>
+              <dd>{JSON.stringify(selectedRecommendation.expected_business_return)}</dd>
+            </div>
+            <div>
+              <dt>Life Return</dt>
+              <dd>{JSON.stringify(selectedRecommendation.expected_life_return)}</dd>
+            </div>
+            <div>
+              <dt>Human Time</dt>
+              <dd>{JSON.stringify(selectedRecommendation.human_time_required)}</dd>
+            </div>
+            <div>
+              <dt>Confidence</dt>
+              <dd>
+                {selectedRecommendation.confidence_label} ({formatPercent(selectedRecommendation.confidence)})
+              </dd>
+            </div>
+            <div>
+              <dt>Risk</dt>
+              <dd>
+                {selectedRecommendation.risk_label} ({formatPercent(selectedRecommendation.risk_score)})
+              </dd>
+            </div>
+            <div>
+              <dt>Evidence</dt>
+              <dd>
+                Triggered capabilities: {selectedRecommendation.triggered_capabilities.join(", ")}
+                <br />
+                Evidence IDs: {selectedRecommendation.supporting_evidence_ids?.join(", ") ?? "Unavailable"}
+                <br />
+                Capability score IDs: {selectedRecommendation.capability_score_ids?.join(", ") ?? "Unavailable"}
+              </dd>
+            </div>
+            <div>
+              <dt>Rationale</dt>
+              <dd>{JSON.stringify(selectedRecommendation.rationale)}</dd>
+            </div>
+            <div>
+              <dt>Calculation Trace</dt>
+              <dd>{JSON.stringify(selectedRecommendation.calculation_trace)}</dd>
+            </div>
+          </dl>
+        </aside>
+      )}
     </main>
   );
 }

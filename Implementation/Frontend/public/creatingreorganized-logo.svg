@@ -1,0 +1,15 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-labelledby="title desc">
+  <title id="title">CreatingReorganized logo</title>
+  <desc id="desc">CreatingReorganized branded hot-air balloon style logo mark.</desc>
+  <rect width="640" height="360" rx="28" fill="#ffffff"/>
+  <path d="M320 32c97 0 176 78 176 175 0 56-27 110-72 143H216c-45-33-72-87-72-143C144 110 223 32 320 32Z" fill="#d7d7d7" stroke="#335f9f" stroke-width="12"/>
+  <path d="M249 48c-45 43-68 95-68 158 0 47 17 90 47 122h62c-20-84-21-178 22-279-22 2-43 8-63 19Z" fill="#eeeeee"/>
+  <path d="M391 48c45 43 68 95 68 158 0 47-17 90-47 122h-62c20-84 21-178-22-279 22 2 43 8 63 19Z" fill="#eeeeee"/>
+  <path d="M196 196c71 13 165 14 248 0" fill="none" stroke="#e9b25d" stroke-linecap="round" stroke-width="20"/>
+  <text x="320" y="152" fill="#335f9f" font-family="Georgia, serif" font-size="58" font-weight="700" text-anchor="middle">Creating</text>
+  <text x="320" y="218" fill="#335f9f" font-family="Georgia, serif" font-size="58" font-weight="700" text-anchor="middle">Reorganized</text>
+  <path d="M230 296h180l-20 42H250Z" fill="#f4f6f8" stroke="#335f9f" stroke-width="8"/>
+  <circle cx="280" cy="275" r="32" fill="#d9ecff" stroke="#335f9f" stroke-width="8"/>
+  <circle cx="360" cy="275" r="32" fill="#8eb6dc" stroke="#335f9f" stroke-width="8"/>
+  <path d="M251 302c35 14 92 14 138 0" fill="none" stroke="#335f9f" stroke-width="8"/>
+</svg>

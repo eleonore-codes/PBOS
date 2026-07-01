@@ -293,3 +293,45 @@ No implementation code changed.
 ### Next milestone
 
 ▶️ M18 – Executive Board
+
+## M17.6 – Founder Dashboard (Frontend MVP)
+
+### Added
+- First Founder Dashboard implemented using React/Vite/TypeScript.
+- Executive dashboard layout with left navigation.
+- CreatingReorganized branding applied using:
+  - Blue `#335f9f`
+  - Gold `#e9b25d`
+- Logo integrated using repository-local SVG fallback.
+- Dashboard includes:
+  - PBHS Score hero card
+  - Business Return
+  - Life Return
+  - Confidence
+  - Assessment Status
+  - Eight capability overview cards
+  - Radar visualization
+  - Weakest/Strongest capability
+  - Top 3 recommendations
+  - Human Time
+  - Recent Activity
+  - Recommendation detail panel
+
+### API
+- Consumes PBHS Core v1 endpoints.
+- Recommendation endpoint aligned with canonical API:
+  - `POST /api/v1/assessments/{assessment_id}/recommendations`
+
+### Notes
+- Uses labelled demo data when no assessment is supplied.
+- Supports loading live PBHS Core v1 data through the implemented REST API.
+- No backend changes introduced.
+
+### Deferred
+- Production logo asset.
+- Historical trends.
+- Executive Board.
+- Strategy.
+- Departments.
+- AI Employees.
+
