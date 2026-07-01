@@ -1,5 +1,17 @@
 # Changelog
 
+# PBHS Core v1 Complete
+
+PBHS Core v1 was completed with milestones M13–M17.
+
+The system now provides a complete deterministic decision-support pipeline:
+
+Assessment → Evidence → Capability Scores → Recommendation Engine
+
+Subsequent milestones build governance, strategic execution, AI Employees, and organizational orchestration on top of this analytical core.
+
+
+
 ## M13 – PBHS MVP Project Setup
 
 ### Added
@@ -67,3 +79,217 @@
 - Recommendations
 - Executive Board
 - Executive reports
+
+## M16 – PBHS MVP Scoring Engine
+
+**Version:** v0.4.0-m16
+
+### Added
+
+- Deterministic PBHS Scoring Engine
+- Capability Score persistence
+- Capability Score repository
+- Likert (1–5) response normalization to a 0–100 scale
+- Capability Score calculation for all eight PBHS capabilities
+- Overall PBHS Summary Score calculation
+- Questionnaire-only confidence calculation
+- Capability maturity level classification (Levels 1–5)
+- Evidence provenance for every Capability Score
+- Assessment status transition from **Submitted** to **Scored**
+- Idempotent scoring workflow
+- Scoring API endpoints:
+  - `POST /api/v1/assessments/{assessment_id}/score`
+  - `GET /api/v1/assessments/{assessment_id}/scores`
+- Database migration for Capability Scores and Assessment Summary fields
+
+### Tests
+
+- Likert normalization
+- Capability Score calculation
+- Overall PBHS Summary Score calculation
+- Confidence calculation
+- Maturity level classification
+- Evidence provenance
+- Snapshot-based scoring
+- Assessment status transition
+- Idempotent rescoring
+- Draft assessment scoring rejection
+- Scoring API endpoints
+
+### Verification
+
+- ✅ 14 automated backend tests passed
+- ✅ Backend verification successful
+- ✅ Evidence provenance preserved
+- ⚠️ One upstream FastAPI/Starlette `httpx` deprecation warning remains (non-blocking)
+
+### Deferred
+
+- Recommendation Engine
+- Executive Board
+- Business Owner Decisions
+- Executive Reports
+- Strategy generation
+
+### Project Status
+
+Completed
+
+- ✅ Backend foundation
+- ✅ Domain model
+- ✅ Persistence layer
+- ✅ Assessment Engine
+- ✅ Scoring Engine
+
+Next milestone
+
+- ▶️ M17 – Recommendation Engine
+
+### Notes
+
+M16 completes the deterministic PBHS Scoring Layer. PBOS can now transform questionnaire evidence into explainable Capability Scores, calculate an overall PBHS Summary Score, assign maturity levels, and preserve full evidence provenance for downstream decision making.
+
+## M17 – PBHS MVP Recommendation Engine
+
+**Version:** v0.5.0-m17
+
+### Added
+
+- Deterministic Recommendation Engine
+- Rule → Recommendation Template → Recommendation Instance architecture
+- Stable recommendation types:
+  - `SPONSOR_READINESS`
+  - `CONTENT_SYSTEM`
+  - `EMAIL_FUNNEL`
+  - `AUTOMATION`
+  - `KNOWLEDGE_LIBRARY`
+- Recommendation persistence
+- Recommendation rule matching
+- Recommendation templates
+- Recommendation instances including:
+  - Business Return estimation
+  - Life Return estimation
+  - Human Time estimation
+  - Human Signature impact
+  - Confidence calculation
+  - Risk assessment
+  - Priority calculation
+  - Structured rationale
+  - Calculation trace
+  - Evidence provenance
+- Recommendation API endpoints:
+  - `POST /api/v1/assessments/{assessment_id}/recommendations`
+  - Recommendation list
+  - Recommendation detail
+  - Recommendation explanation
+  - Recommendation evidence
+- Database migration for Recommendation persistence
+
+### Changed
+
+- Recommendation generation endpoint aligned with the canonical API specification.
+- PBHS MVP Scoring now explicitly supports **Likert 1–5** response scales only.
+- Added deterministic domain error:
+
+  `pbhs_scoring_requires_likert_1_5_response_scale`
+
+- Added regression tests ensuring unsupported response scales are rejected during scoring while remaining forward-compatible within the Assessment Engine.
+
+### Tests
+
+- Deterministic recommendation generation
+- Rule matching
+- Recommendation template instantiation
+- Recommendation persistence
+- Business Return estimation
+- Life Return estimation
+- Human Time estimation
+- Human Signature impact
+- Confidence calculation
+- Risk calculation
+- Priority calculation
+- Evidence provenance
+- Recommendation API endpoints
+- Deterministic recommendation ordering
+- Regression test for unsupported response scales
+
+### Verification
+
+- ✅ 20 automated backend tests passed
+- ✅ Recommendation generation is deterministic
+- ✅ Evidence provenance preserved end-to-end
+- ✅ Recommendation rationale fully explainable
+- ✅ API endpoints aligned with the PBHS API specification
+- ⚠️ One upstream FastAPI/Starlette `httpx` deprecation warning remains (non-blocking)
+
+### Deferred
+
+- Executive Board
+- Business Owner Decisions
+- Executive Reports
+- Strategy generation
+- Recommendation Generation Run persistence
+- Vision of Life–aware recommendation personalization
+- Multi-source evidence weighting
+
+### Project Status
+
+Completed
+
+- ✅ Backend foundation
+- ✅ Domain model
+- ✅ Persistence layer
+- ✅ Assessment Engine
+- ✅ Scoring Engine
+- ✅ Recommendation Engine
+
+Next milestone
+
+- ▶️ M18 – Executive Board
+
+### Notes
+
+M17 completes the first fully deterministic PBHS decision-support pipeline:
+
+**Assessment → Evidence → Capability Scores → Recommendation Engine**
+
+PBOS can now generate reproducible, evidence-based recommendation candidates with complete provenance, structured rationale, expected Business Return, expected Life Return, Human Time estimates, Confidence, Risk, and Priority. Executive governance, Business Owner decisions, and strategic execution remain intentionally outside the scope of this milestone.
+
+## M17.5 – PBHS Core v1 Contract Freeze
+
+**Version:** v0.5.1-m17.5
+
+### Added
+
+- `Implementation/API/PBHS_API_v1.md`
+- `Implementation/PBHS_Domain_Model_v1.md`
+- `Implementation/PBHS_State_Machine_v1.md`
+- `Implementation/PBHS_Core_v1_Architecture_Summary.md`
+
+### Purpose
+
+Established the canonical PBHS Core v1 implementation contract after completion of M13–M17.
+
+The documentation freezes the implemented API, domain model, lifecycle, and architectural boundaries before beginning governance features.
+
+### Scope
+
+Documented:
+
+- Public REST API
+- Implemented domain model
+- Assessment and recommendation lifecycle
+- Implemented pipeline
+- Deferred scope
+- Known technical debt
+- Extension points for M18+
+
+### Verification
+
+Documentation only.
+
+No implementation code changed.
+
+### Next milestone
+
+▶️ M18 – Executive Board
