@@ -346,8 +346,8 @@ Recommendation Engine
 
 Decision Layer
 ────────────────────────
-Decision Framework
 Executive Board
+Business Owner
 
 ↓
 

@@ -116,13 +116,13 @@ PBHS
         ↓
 Recommendation Engine
         ↓
-Decision Framework
-        ↓
 Executive Board
+        ↓
+Business Owner
         ↓
 Strategy
         ↓
-Operational AI Employees
+Departments
         ↓
 Execution
         ↓

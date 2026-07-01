@@ -72,9 +72,11 @@ Recommendation Engine
     ↓
 Executive Board
     ↓
-AI Employees
-    ↓
 Business Owner
+    ↓
+Strategy
+    ↓
+Departments
 ```
 
 It converts interpretation into actionable priorities.

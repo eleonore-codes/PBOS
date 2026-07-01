@@ -68,6 +68,10 @@ Executive Board Review
         ↓
 Business Owner Decision
         ↓
+Strategy
+        ↓
+Departments
+        ↓
 Execution
         ↓
 Learning

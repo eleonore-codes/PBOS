@@ -83,9 +83,9 @@ Pattern Recognition
         ▼
 Bottleneck Analysis
         ▼
-Executive Board Review
-        ▼
 Recommendation Engine
+        ▼
+Executive Board Review
         ▼
 Business Owner
 ```
@@ -304,9 +304,9 @@ High-leverage opportunity.
 
 ---
 
-# Executive Board Review
+# Executive Review Inputs
 
-Before recommendations are generated, each capability is reviewed by the relevant Executive.
+Before candidate recommendations are finalized, PBHS interpretation outputs are prepared for the Recommendation Engine and later Executive Board review.
 
 Example:
 
@@ -322,7 +322,7 @@ Example:
 | Business Systems | Chief Operations Officer |
 | Life Return | Chief Wellbeing Officer |
 
-Each Executive contributes a perspective before recommendations are prioritized.
+Each Executive contributes a perspective after candidate recommendations have been generated and prioritized.
 
 ---
 
@@ -397,7 +397,7 @@ The Interpretation Model produces:
 - Secondary Bottlenecks
 - Opportunity Analysis
 - Strategic Risks
-- Executive Board Summary
+- Executive Review Inputs
 - Interpretation Confidence
 - Recommendation Inputs
 

@@ -83,10 +83,10 @@ Capability Assessment
 Interpretation Model
         │
         ▼
-Executive Board Review
+Recommendation Engine
         │
         ▼
-Recommendation Engine
+Executive Board Review
         │
         ▼
 Executive Report

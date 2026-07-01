@@ -183,11 +183,11 @@ Interpretation
 
 ↓
 
-Executive Board Review
+Recommendation Engine
 
 ↓
 
-Recommendation Engine
+Executive Board Review
 
 ↓
 
@@ -261,7 +261,7 @@ PBHS measures the current state.
 
 The Recommendation Engine identifies the next best actions.
 
-The Executive Board provides strategic interpretation.
+The Executive Board reviews, challenges and explains candidate recommendations.
 
 Together they form the business decision-making core of PBOS.
 

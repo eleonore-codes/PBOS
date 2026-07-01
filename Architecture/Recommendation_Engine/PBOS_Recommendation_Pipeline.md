@@ -58,6 +58,10 @@ Executive Board Review
         ↓
 Business Owner Decision
         ↓
+Strategy Organization
+        ↓
+Department Execution
+        ↓
 Execution
         ↓
 Outcome Measurement
@@ -238,7 +242,19 @@ Approved Action Plan
 
 ---
 
-# Stage 10 — Execution
+# Stage 10 — Strategy Organization
+
+Objective:
+
+Organize approved recommendations into strategy.
+
+Output:
+
+Strategic Execution Plan
+
+---
+
+# Stage 11 — Department Execution
 
 Objective:
 
@@ -257,7 +273,7 @@ Completed Work
 
 ---
 
-# Stage 11 — Outcome Measurement
+# Stage 12 — Outcome Measurement
 
 Objective:
 
@@ -278,7 +294,7 @@ Outcome Report
 
 ---
 
-# Stage 12 — Continuous Learning
+# Stage 13 — Continuous Learning
 
 Objective:
 

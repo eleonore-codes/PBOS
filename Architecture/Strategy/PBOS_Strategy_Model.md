@@ -335,7 +335,7 @@ If a task cannot be traced through this hierarchy, PBOS should question whether 
 
 # Strategy Governance
 
-The Executive Board owns strategy.
+The Executive Board reviews and governs proposed strategy.
 
 Responsibilities include:
 
@@ -346,7 +346,7 @@ Responsibilities include:
 - reviewing outcomes
 - updating strategy
 
-The Business Owner retains final authority.
+The Business Owner owns final approval and accountability.
 
 ---
 

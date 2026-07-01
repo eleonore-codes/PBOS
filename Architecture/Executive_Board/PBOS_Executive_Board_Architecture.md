@@ -53,12 +53,16 @@ Executive Board
         ↓
 Business Owner
         ↓
+Strategy
+        ↓
+Departments
+        ↓
 Execution
         ↓
 Learning
 ```
 
-The Executive Board reviews recommendations rather than generating raw evidence.
+The Executive Board reviews candidate recommendations rather than generating raw evidence or owning execution.
 
 ---
 

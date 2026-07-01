@@ -79,6 +79,10 @@ Recommendation Engine
 Executive Board Review
     ↓
 Business Owner
+    ↓
+Strategy
+    ↓
+Departments
 ```
 
 ---

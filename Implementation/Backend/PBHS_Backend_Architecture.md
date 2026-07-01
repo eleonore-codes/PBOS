@@ -17,7 +17,7 @@ updated: 2026-07-01
 
 ## Purpose
 
-The PBHS Backend provides the business logic for the Personal Business Health Score (PBHS).
+The PBHS Backend provides the business logic for the Podcast Business Health System (PBHS).
 
 It is the first software module of PBOS.
 

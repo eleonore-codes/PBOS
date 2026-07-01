@@ -151,19 +151,23 @@ PBHS observes
 
 ↓
 
-Executive Board evaluates
-
-↓
-
 Recommendation Engine prioritizes
 
 ↓
 
-AI Employees prepare execution plans
+Executive Board evaluates
 
 ↓
 
 Business Owner approves strategic work
+
+↓
+
+Strategy organizes approved work
+
+↓
+
+Departments prepare execution plans
 
 ↓
 
@@ -390,11 +394,15 @@ The Recommendation Engine is the decision-making core of PBOS.
 
 PBHS measures reality.
 
-The Executive Board interprets reality.
+The Recommendation Engine determines candidate priorities.
 
-The Recommendation Engine determines priorities.
+The Executive Board reviews, challenges and explains recommendations.
 
-AI Employees execute.
+The Business Owner approves strategic work.
+
+Strategy organizes approved work.
+
+Departments execute through operational work and AI Employees.
 
 The Business Owner retains accountability.
 
