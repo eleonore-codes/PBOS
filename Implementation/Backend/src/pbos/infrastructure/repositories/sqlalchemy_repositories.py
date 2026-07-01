@@ -15,6 +15,7 @@ from pbos.infrastructure.database.models import (
     Business,
     EvidenceItem,
     PBHSAssessment,
+    PBHSAssessmentQuestion,
     PBHSQuestion,
     PBHSResponse,
     coerce_uuid,
@@ -51,6 +52,43 @@ class SqlAlchemyAssessmentRepository(AssessmentRepository):
         self.session.flush()
         return response
 
+    def list_responses(self, assessment_id: UUID) -> list[PBHSResponse]:
+        statement = select(PBHSResponse).where(
+            PBHSResponse.assessment_id == coerce_uuid(assessment_id)
+        )
+        return list(self.session.scalars(statement))
+
+    def get_response(self, assessment_id: UUID, question_id: UUID) -> PBHSResponse | None:
+        statement = select(PBHSResponse).where(
+            PBHSResponse.assessment_id == coerce_uuid(assessment_id),
+            PBHSResponse.question_id == coerce_uuid(question_id),
+        )
+        return self.session.scalars(statement).first()
+
+    def add_assessment_question(
+        self, assessment_question: PBHSAssessmentQuestion
+    ) -> PBHSAssessmentQuestion:
+        self.session.add(assessment_question)
+        self.session.flush()
+        return assessment_question
+
+    def list_assessment_questions(self, assessment_id: UUID) -> list[PBHSAssessmentQuestion]:
+        statement = (
+            select(PBHSAssessmentQuestion)
+            .where(PBHSAssessmentQuestion.assessment_id == coerce_uuid(assessment_id))
+            .order_by(PBHSAssessmentQuestion.order_index)
+        )
+        return list(self.session.scalars(statement))
+
+    def get_assessment_question(
+        self, assessment_id: UUID, question_id: UUID
+    ) -> PBHSAssessmentQuestion | None:
+        statement = select(PBHSAssessmentQuestion).where(
+            PBHSAssessmentQuestion.assessment_id == coerce_uuid(assessment_id),
+            PBHSAssessmentQuestion.question_id == coerce_uuid(question_id),
+        )
+        return self.session.scalars(statement).first()
+
 
 class SqlAlchemyQuestionRepository(QuestionRepository):
     def __init__(self, session: Session) -> None:
@@ -84,6 +122,10 @@ class SqlAlchemyEvidenceRepository(EvidenceRepository):
         )
         return list(self.session.scalars(statement))
 
+    def get_for_response(self, response_id: UUID) -> EvidenceItem | None:
+        statement = select(EvidenceItem).where(EvidenceItem.response_id == coerce_uuid(response_id))
+        return self.session.scalars(statement).first()
+
     def create_from_response(
         self,
         *,
@@ -93,6 +135,13 @@ class SqlAlchemyEvidenceRepository(EvidenceRepository):
         related_capability: str,
         evidence_value: Any,
     ) -> EvidenceItem:
+        existing = self.get_for_response(response_id)
+        if existing is not None:
+            existing.related_capability = related_capability
+            existing.evidence_value = evidence_value
+            self.session.flush()
+            return existing
+
         evidence = EvidenceItem(
             assessment_id=coerce_uuid(assessment_id),
             response_id=coerce_uuid(response_id),

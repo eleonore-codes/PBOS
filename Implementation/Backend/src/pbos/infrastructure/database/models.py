@@ -69,6 +69,10 @@ class PBHSAssessment(Base):
     completed_at: Mapped[datetime | None] = mapped_column(DateTime)
 
     business: Mapped[Business] = relationship(back_populates="assessments")
+    assessment_questions: Mapped[list["PBHSAssessmentQuestion"]] = relationship(
+        back_populates="assessment",
+        order_by="PBHSAssessmentQuestion.order_index",
+    )
     responses: Mapped[list["PBHSResponse"]] = relationship(back_populates="assessment")
     evidence_items: Mapped[list["EvidenceItem"]] = relationship(back_populates="assessment")
 
@@ -93,6 +97,47 @@ class PBHSQuestion(Base):
     )
 
     responses: Mapped[list["PBHSResponse"]] = relationship(back_populates="question")
+    assessment_questions: Mapped[list["PBHSAssessmentQuestion"]] = relationship(
+        back_populates="question"
+    )
+
+
+class PBHSAssessmentQuestion(Base):
+    __tablename__ = "pbhs_assessment_questions"
+    __table_args__ = (
+        UniqueConstraint(
+            "assessment_id",
+            "question_id",
+            name="uq_pbhs_assessment_questions_assessment_question",
+        ),
+        Index(
+            "ix_pbhs_assessment_questions_assessment_capability",
+            "assessment_id",
+            "capability",
+        ),
+    )
+
+    assessment_question_id: Mapped[str] = mapped_column(
+        String(36), primary_key=True, default=new_uuid
+    )
+    assessment_id: Mapped[str] = mapped_column(
+        ForeignKey("pbhs_assessments.assessment_id"), nullable=False, index=True
+    )
+    question_id: Mapped[str] = mapped_column(
+        ForeignKey("pbhs_questions.question_id"), nullable=False, index=True
+    )
+    question_version: Mapped[str] = mapped_column(String(50), nullable=False)
+    capability: Mapped[str] = mapped_column(String(150), nullable=False)
+    construct: Mapped[str] = mapped_column(String(150), nullable=False)
+    question_text: Mapped[str] = mapped_column(String(1000), nullable=False)
+    response_scale: Mapped[str] = mapped_column(String(100), nullable=False)
+    required: Mapped[bool] = mapped_column(nullable=False, default=True)
+    order_index: Mapped[int] = mapped_column(nullable=False)
+    source_status: Mapped[str] = mapped_column(String(50), nullable=False)
+    created_at: Mapped[datetime] = mapped_column(DateTime, nullable=False, default=utc_now)
+
+    assessment: Mapped[PBHSAssessment] = relationship(back_populates="assessment_questions")
+    question: Mapped[PBHSQuestion] = relationship(back_populates="assessment_questions")
 
 
 class PBHSResponse(Base):

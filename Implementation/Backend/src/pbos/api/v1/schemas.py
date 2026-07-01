@@ -59,6 +59,34 @@ class AssessmentRead(BaseModel):
     completed_at: datetime | None
 
 
+class AssessmentQuestionRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True, populate_by_name=True)
+
+    assessment_question_id: str
+    assessment_id: str
+    question_id: str
+    question_version: str
+    capability: str
+    construct_: str = Field(alias="construct", serialization_alias="construct")
+    question_text: str
+    response_scale: str
+    required: bool
+    order_index: int
+    source_status: str
+    created_at: datetime
+
+
+class AssessmentProgressRead(BaseModel):
+    assessment_id: str
+    status: AssessmentStatus
+    total_required_questions: int
+    answered_required_questions: int
+    percent_complete: float
+    missing_question_ids: list[str]
+    missing_capabilities: list[str]
+    locked: bool
+
+
 class QuestionCreate(BaseModel):
     model_config = ConfigDict(populate_by_name=True)
 

@@ -6,6 +6,8 @@ from sqlalchemy.orm import Session
 
 from pbos.api.v1.schemas import (
     AssessmentCreate,
+    AssessmentProgressRead,
+    AssessmentQuestionRead,
     AssessmentRead,
     BusinessCreate,
     BusinessRead,
@@ -13,6 +15,7 @@ from pbos.api.v1.schemas import (
     QuestionCreate,
     QuestionRead,
     ResponseCreate,
+    ResponseRead,
     ResponseSubmissionRead,
     UserCreate,
     UserRead,
@@ -27,6 +30,19 @@ from pbos.infrastructure.repositories.sqlalchemy_repositories import (
 from pbos.services.assessment_service import AssessmentService
 
 api_v1_router = APIRouter()
+
+
+def assessment_error_status(detail: str) -> int:
+    if detail.endswith("_not_found"):
+        return status.HTTP_404_NOT_FOUND
+    if detail in {
+        "assessment_locked",
+        "invalid_status_transition",
+        "assessment_incomplete",
+        "assessment_has_no_required_questions",
+    }:
+        return status.HTTP_409_CONFLICT
+    return status.HTTP_422_UNPROCESSABLE_ENTITY
 
 
 @api_v1_router.post("/users", response_model=UserRead, status_code=status.HTTP_201_CREATED)
@@ -85,6 +101,50 @@ def start_assessment(
         raise HTTPException(status_code=404, detail=str(exc)) from exc
 
 
+@api_v1_router.get("/assessments/{assessment_id}", response_model=AssessmentRead)
+def get_assessment(assessment_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return AssessmentService(session).get_assessment(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.get(
+    "/assessments/{assessment_id}/questions",
+    response_model=list[AssessmentQuestionRead],
+)
+def list_assessment_questions(
+    assessment_id: UUID,
+    session: Session = Depends(get_session),
+):
+    try:
+        return AssessmentService(session).list_assessment_questions(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.get(
+    "/assessments/{assessment_id}/progress",
+    response_model=AssessmentProgressRead,
+)
+def get_assessment_progress(
+    assessment_id: UUID,
+    session: Session = Depends(get_session),
+):
+    try:
+        return AssessmentService(session).get_progress(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.post("/assessments/{assessment_id}/submit", response_model=AssessmentRead)
+def submit_assessment(assessment_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return AssessmentService(session).submit_assessment(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
 @api_v1_router.post(
     "/pbhs/questions",
     response_model=QuestionRead,
@@ -124,10 +184,20 @@ def submit_response(
         )
     except ValueError as exc:
         detail = str(exc)
-        status_code = 404 if detail.endswith("_not_found") else 422
-        raise HTTPException(status_code=status_code, detail=detail) from exc
+        raise HTTPException(status_code=assessment_error_status(detail), detail=detail) from exc
 
     return {"response": response, "evidence": evidence}
+
+
+@api_v1_router.get("/assessments/{assessment_id}/responses", response_model=list[ResponseRead])
+def list_assessment_responses(
+    assessment_id: UUID,
+    session: Session = Depends(get_session),
+):
+    try:
+        return AssessmentService(session).list_responses(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
 
 
 @api_v1_router.get("/assessments/{assessment_id}/evidence", response_model=list[EvidenceRead])
