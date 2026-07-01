@@ -335,3 +335,19 @@ No implementation code changed.
 - Departments.
 - AI Employees.
 
+## M17.7 – Founder Dashboard UX Polish
+
+### Improved
+- Enlarged CreatingReorganized logo and added product subtitle.
+- Increased prominence of the Overall PBHS Score.
+- Enlarged radar chart for improved readability.
+- Added professional SVG icons to sidebar navigation.
+- Added SVG icons to KPI cards.
+- Added Human Time KPI derived from recommendation data.
+- Added subtle capability color coding based on operating health.
+
+### Notes
+- Frontend-only UX improvements.
+- No backend changes.
+- No API changes.
+- No PBHS data model changes.

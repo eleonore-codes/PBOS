@@ -23,7 +23,7 @@ a {
 .founder-dashboard {
   background: #f6f8fb;
   display: grid;
-  grid-template-columns: 288px minmax(0, 1fr);
+  grid-template-columns: 368px minmax(0, 1fr);
   min-height: 100vh;
 }
 
@@ -32,14 +32,26 @@ a {
   border-right: 1px solid #e2e8f0;
   display: flex;
   flex-direction: column;
-  gap: 40px;
-  padding: 30px 24px;
+  gap: 34px;
+  padding: 32px 26px;
+}
+
+.sidebar__brand {
+  display: grid;
+  gap: 8px;
 }
 
 .sidebar__logo {
   display: block;
   height: auto;
-  width: 220px;
+  width: 330px;
+}
+
+.sidebar__brand p {
+  color: #335f9f;
+  font-size: 0.84rem;
+  font-weight: 800;
+  margin: 0;
 }
 
 .sidebar nav {
@@ -48,10 +60,13 @@ a {
 }
 
 .sidebar a {
+  align-items: center;
   border-radius: 8px;
   color: #475569;
+  display: flex;
   font-size: 0.95rem;
   font-weight: 700;
+  gap: 12px;
   padding: 12px 14px;
   text-decoration: none;
 }
@@ -60,6 +75,17 @@ a {
 .sidebar a:hover {
   background: rgba(51, 95, 159, 0.1);
   color: #335f9f;
+}
+
+.icon {
+  fill: none;
+  flex: 0 0 auto;
+  height: 20px;
+  stroke: currentColor;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke-width: 1.9;
+  width: 20px;
 }
 
 .dashboard-content {
@@ -121,7 +147,7 @@ a {
 .hero-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: minmax(260px, 1.25fr) repeat(4, minmax(170px, 1fr));
+  grid-template-columns: minmax(340px, 1.8fr) repeat(4, minmax(170px, 1fr));
   margin-bottom: 18px;
 }
 
@@ -135,8 +161,13 @@ a {
 }
 
 .score-hero {
-  border-top: 4px solid #335f9f;
-  padding: 22px;
+  background:
+    linear-gradient(135deg, rgba(51, 95, 159, 0.12), rgba(233, 178, 93, 0.16)),
+    #ffffff;
+  border: 1px solid rgba(51, 95, 159, 0.26);
+  border-top: 6px solid #335f9f;
+  box-shadow: 0 20px 42px rgba(51, 95, 159, 0.14);
+  padding: 28px;
 }
 
 .score-hero p,
@@ -156,13 +187,13 @@ a {
 
 .score-hero strong {
   color: #0f172a;
-  font-size: 4.8rem;
+  font-size: 6.8rem;
   line-height: 0.92;
 }
 
 .score-hero span {
   color: #64748b;
-  font-size: 1.25rem;
+  font-size: 1.55rem;
   font-weight: 800;
 }
 
@@ -177,6 +208,25 @@ a {
 .metric-card {
   min-width: 0;
   padding: 18px;
+}
+
+.metric-card__header {
+  align-items: center;
+  color: #335f9f;
+  display: flex;
+  gap: 9px;
+  margin-bottom: 10px;
+}
+
+.metric-card__header .icon {
+  color: #e9b25d;
+  height: 22px;
+  stroke-width: 2;
+  width: 22px;
+}
+
+.metric-card__header p {
+  margin: 0;
 }
 
 .metric-card strong {
@@ -221,7 +271,7 @@ a {
 }
 
 .panel--wide {
-  min-height: 330px;
+  min-height: 430px;
 }
 
 .panel__header {
@@ -249,9 +299,9 @@ a {
 }
 
 .radar-card svg {
-  height: 238px;
+  height: 334px;
   max-width: 100%;
-  width: 238px;
+  width: 334px;
 }
 
 .radar-card circle,
@@ -274,9 +324,30 @@ a {
 }
 
 .capability-card {
+  background: #ffffff;
   border: 1px solid #e2e8f0;
   border-radius: 8px;
   padding: 16px;
+}
+
+.capability-card--excellent {
+  background: linear-gradient(180deg, rgba(22, 101, 52, 0.08), #ffffff 56%);
+  border-color: rgba(22, 101, 52, 0.22);
+}
+
+.capability-card--good {
+  background: linear-gradient(180deg, rgba(51, 95, 159, 0.1), #ffffff 56%);
+  border-color: rgba(51, 95, 159, 0.24);
+}
+
+.capability-card--attention {
+  background: linear-gradient(180deg, rgba(233, 178, 93, 0.16), #ffffff 56%);
+  border-color: rgba(233, 178, 93, 0.42);
+}
+
+.capability-card--critical {
+  background: linear-gradient(180deg, rgba(185, 28, 28, 0.08), #ffffff 56%);
+  border-color: rgba(185, 28, 28, 0.22);
 }
 
 .capability-card div:first-child {
@@ -466,7 +537,11 @@ a {
 
 @media (max-width: 1180px) {
   .founder-dashboard {
-    grid-template-columns: 240px minmax(0, 1fr);
+    grid-template-columns: 280px minmax(0, 1fr);
+  }
+
+  .sidebar__logo {
+    width: 250px;
   }
 
   .hero-grid,
@@ -486,6 +561,10 @@ a {
     border-bottom: 1px solid #e2e8f0;
     border-right: 0;
     gap: 20px;
+  }
+
+  .sidebar__logo {
+    width: min(330px, 100%);
   }
 
   .sidebar nav {

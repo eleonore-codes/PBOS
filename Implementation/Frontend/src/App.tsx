@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { type ReactNode, useEffect, useMemo, useState } from "react";
 
 import "./styles.css";
 
@@ -50,6 +50,18 @@ type DashboardData = {
   recommendations: Recommendation[];
   recentActivity: string[];
 };
+
+type IconName =
+  | "dashboard"
+  | "businesses"
+  | "assessments"
+  | "scores"
+  | "recommendations"
+  | "settings"
+  | "businessReturn"
+  | "lifeReturn"
+  | "humanTime"
+  | "confidence";
 
 const demoCapabilities: CapabilityScore[] = [
   { capability: "Human Signature", score: 84, maturity_level: 4, confidence: 0.86 },
@@ -173,9 +185,36 @@ function getHours(value: Record<string, unknown>) {
   return "Trace";
 }
 
+function getHourEstimate(value: Record<string, unknown>) {
+  const estimate = value.estimated_hours_required;
+  if (
+    estimate &&
+    typeof estimate === "object" &&
+    "min" in estimate &&
+    "max" in estimate &&
+    typeof estimate.min === "number" &&
+    typeof estimate.max === "number"
+  ) {
+    return estimate;
+  }
+  return undefined;
+}
+
 function average(values: number[]) {
   if (values.length === 0) return 0;
   return Math.round(values.reduce((sum, value) => sum + value, 0) / values.length);
+}
+
+function humanTimeSummary(recommendations: Recommendation[]) {
+  const estimates = recommendations
+    .map((recommendation) => getHourEstimate(recommendation.human_time_required))
+    .filter((estimate): estimate is { min: number; max: number } => Boolean(estimate));
+
+  if (estimates.length === 0) return "Trace";
+
+  const min = estimates.reduce((sum, estimate) => sum + estimate.min, 0);
+  const max = estimates.reduce((sum, estimate) => sum + estimate.max, 0);
+  return `${min}-${max}h`;
 }
 
 async function getJson<T>(path: string): Promise<T> {
@@ -286,20 +325,103 @@ function RadarPlaceholder({ capabilities }: { capabilities: CapabilityScore[] })
   );
 }
 
+function SvgIcon({ name }: { name: IconName }) {
+  const paths: Record<IconName, ReactNode> = {
+    dashboard: (
+      <>
+        <rect x="3" y="3" width="7" height="8" rx="1.5" />
+        <rect x="14" y="3" width="7" height="5" rx="1.5" />
+        <rect x="14" y="12" width="7" height="9" rx="1.5" />
+        <rect x="3" y="15" width="7" height="6" rx="1.5" />
+      </>
+    ),
+    businesses: (
+      <>
+        <path d="M4 21V5a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v16" />
+        <path d="M16 8h2a2 2 0 0 1 2 2v11" />
+        <path d="M8 7h4M8 11h4M8 15h4" />
+      </>
+    ),
+    assessments: (
+      <>
+        <path d="M8 4h8l2 2v15H6V6l2-2Z" />
+        <path d="M9 10h6M9 14h6M9 18h3" />
+      </>
+    ),
+    scores: (
+      <>
+        <path d="M4 19V5" />
+        <path d="M4 19h16" />
+        <path d="M8 16v-5M12 16V8M16 16v-9" />
+      </>
+    ),
+    recommendations: (
+      <>
+        <path d="M12 3a7 7 0 0 0-4 12.74V19h8v-3.26A7 7 0 0 0 12 3Z" />
+        <path d="M9 22h6" />
+        <path d="M10 11l1.5 1.5L15 9" />
+      </>
+    ),
+    settings: (
+      <>
+        <circle cx="12" cy="12" r="3" />
+        <path d="M19.4 15a8.1 8.1 0 0 0 .1-1.2 8.1 8.1 0 0 0-.1-1.2l2-1.5-2-3.5-2.4 1a8 8 0 0 0-2-1.1L14.7 5h-5.4L9 7.5a8 8 0 0 0-2 1.1l-2.4-1-2 3.5 2 1.5a8.1 8.1 0 0 0-.1 1.2 8.1 8.1 0 0 0 .1 1.2l-2 1.5 2 3.5 2.4-1a8 8 0 0 0 2 1.1l.3 2.5h5.4l.3-2.5a8 8 0 0 0 2-1.1l2.4 1 2-3.5-2-1.5Z" />
+      </>
+    ),
+    businessReturn: (
+      <>
+        <path d="M4 19V5" />
+        <path d="M4 19h16" />
+        <path d="m7 15 4-4 3 3 5-7" />
+        <path d="M16 7h3v3" />
+      </>
+    ),
+    lifeReturn: (
+      <>
+        <path d="M12 21s-7-4.5-9-10a5 5 0 0 1 8-5 5 5 0 0 1 8 5c-2 5.5-9 10-9 10Z" />
+        <path d="M8 12h2l1-2 2 5 1-3h2" />
+      </>
+    ),
+    humanTime: (
+      <>
+        <circle cx="12" cy="12" r="8" />
+        <path d="M12 8v5l3 2" />
+      </>
+    ),
+    confidence: (
+      <>
+        <path d="M12 3 4 6v6c0 5 3.4 8 8 9 4.6-1 8-4 8-9V6l-8-3Z" />
+        <path d="m8.5 12 2.2 2.2L15.8 9" />
+      </>
+    ),
+  };
+
+  return (
+    <svg className="icon" viewBox="0 0 24 24" aria-hidden="true">
+      {paths[name]}
+    </svg>
+  );
+}
+
 function MetricCard({
   title,
   value,
   detail,
+  icon,
   tone = "neutral",
 }: {
   title: string;
   value: string;
   detail: string;
+  icon?: IconName;
   tone?: "neutral" | "excellent" | "good" | "attention" | "critical";
 }) {
   return (
     <section className={`metric-card metric-card--${tone}`}>
-      <p>{title}</p>
+      <div className="metric-card__header">
+        {icon && <SvgIcon name={icon} />}
+        <p>{title}</p>
+      </div>
       <strong>{value}</strong>
       <span>{detail}</span>
     </section>
@@ -335,23 +457,34 @@ export function App() {
       .map((recommendation) => getNumericScore(recommendation.expected_life_return))
       .filter((score): score is number => typeof score === "number"),
   );
+  const humanTime = humanTimeSummary(data.recommendations);
+  const navItems: { label: string; icon: IconName }[] = [
+    { label: "Dashboard", icon: "dashboard" },
+    { label: "Businesses", icon: "businesses" },
+    { label: "Assessments", icon: "assessments" },
+    { label: "Scores", icon: "scores" },
+    { label: "Recommendations", icon: "recommendations" },
+    { label: "Settings", icon: "settings" },
+  ];
 
   return (
     <main className="founder-dashboard" aria-label="Founder Dashboard">
       <aside className="sidebar">
-        <img
-          className="sidebar__logo"
-          src="/creatingreorganized-logo.svg"
-          alt="CreatingReorganized"
-        />
+        <div className="sidebar__brand">
+          <img
+            className="sidebar__logo"
+            src="/creatingreorganized-logo.svg"
+            alt="CreatingReorganized"
+          />
+          <p>Podcast Business Operating System</p>
+        </div>
         <nav aria-label="Primary navigation">
-          {["Dashboard", "Businesses", "Assessments", "Scores", "Recommendations", "Settings"].map(
-            (item) => (
-              <a className={item === "Dashboard" ? "active" : undefined} href="#" key={item}>
-                {item}
-              </a>
-            ),
-          )}
+          {navItems.map((item) => (
+            <a className={item.label === "Dashboard" ? "active" : undefined} href="#" key={item.label}>
+              <SvgIcon name={item.icon} />
+              {item.label}
+            </a>
+          ))}
         </nav>
       </aside>
 
@@ -386,25 +519,29 @@ export function App() {
             title="Business Return"
             value={businessReturn ? `${businessReturn}` : "Trace"}
             detail="Expected return from recommendations"
+            icon="businessReturn"
             tone={businessReturn ? scoreTone(businessReturn) : "neutral"}
           />
           <MetricCard
             title="Life Return"
             value={lifeReturn ? `${lifeReturn}` : "Trace"}
             detail="Founder-life value from recommendations"
+            icon="lifeReturn"
             tone={lifeReturn ? scoreTone(lifeReturn) : "neutral"}
+          />
+          <MetricCard
+            title="Human Time"
+            value={humanTime}
+            detail="Estimated time across recommendations"
+            icon="humanTime"
+            tone="attention"
           />
           <MetricCard
             title="Confidence"
             value={formatPercent(data.overallConfidence)}
             detail="Evidence-backed certainty"
+            icon="confidence"
             tone="good"
-          />
-          <MetricCard
-            title="Assessment Status"
-            value={`${Math.round(data.progressPercent)}%`}
-            detail={statusLabel(data.assessmentStatus)}
-            tone="neutral"
           />
         </section>
 
@@ -447,7 +584,10 @@ export function App() {
           </div>
           <div className="capability-grid">
             {data.capabilityScores.map((capability) => (
-              <article className="capability-card" key={capability.capability}>
+              <article
+                className={`capability-card capability-card--${scoreTone(capability.score)}`}
+                key={capability.capability}
+              >
                 <div>
                   <h3>{capability.capability}</h3>
                   <span>Maturity {capability.maturity_level}</span>
