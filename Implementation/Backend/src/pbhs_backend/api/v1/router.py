@@ -1,3 +1,3 @@
-from fastapi import APIRouter
+from pbos.api.v1.router import api_v1_router
 
-api_v1_router = APIRouter()
+__all__ = ["api_v1_router"]

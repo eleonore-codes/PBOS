@@ -1,13 +1,3 @@
-from dataclasses import dataclass
-from functools import lru_cache
+from pbos.core.config import Settings, get_settings
 
-
-@dataclass(frozen=True)
-class Settings:
-    app_name: str = "PBHS MVP API"
-    api_version: str = "0.1.0"
-
-
-@lru_cache
-def get_settings() -> Settings:
-    return Settings()
+__all__ = ["Settings", "get_settings"]

@@ -1,18 +1,19 @@
-# PBHS Backend
+# PBOS Backend
 
 ## Purpose
 
-FastAPI backend skeleton for the PBHS MVP.
+FastAPI backend for the PBOS/PBHS MVP.
 
-This M1 setup creates the application boundaries only:
+This M2 setup implements the persistence foundation for:
 
-- REST API layer
-- application/domain service layer
-- persistence layer
-- configuration layer
-- tests
+- User
+- Business
+- PBHS Assessment
+- PBHS Question
+- PBHS Response
+- Evidence Item
 
-Business logic, scoring, recommendations and report generation start in later milestones.
+Scoring, recommendations, executive reviews, owner decisions and executive reports are intentionally deferred.
 
 ## Run
 
@@ -21,7 +22,7 @@ cd Implementation/Backend
 python -m venv .venv
 .venv\Scripts\Activate.ps1
 pip install -r requirements.txt
-uvicorn pbhs_backend.main:app --reload
+uvicorn pbos.main:app --reload
 ```
 
 ## Test

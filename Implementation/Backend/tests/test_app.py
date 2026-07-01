@@ -1,6 +1,6 @@
 from fastapi.testclient import TestClient
 
-from pbhs_backend.main import create_app
+from pbos.main import create_app
 
 
 def test_health_check() -> None:
