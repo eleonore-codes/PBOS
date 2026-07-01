@@ -15,6 +15,10 @@ from pbos.api.v1.schemas import (
     EvidenceRead,
     QuestionCreate,
     QuestionRead,
+    RecommendationEvidenceRead,
+    RecommendationExplanationRead,
+    RecommendationPortfolioRead,
+    RecommendationRead,
     ResponseCreate,
     ResponseRead,
     ResponseSubmissionRead,
@@ -29,6 +33,7 @@ from pbos.infrastructure.repositories.sqlalchemy_repositories import (
     SqlAlchemyQuestionRepository,
 )
 from pbos.services.assessment_service import AssessmentService
+from pbos.services.recommendation_service import RecommendationService
 from pbos.services.scoring_service import ScoringService
 
 api_v1_router = APIRouter()
@@ -46,6 +51,7 @@ def assessment_error_status(detail: str) -> int:
         "assessment_not_scored",
         "missing_required_evidence",
         "capability_has_no_scoreable_responses",
+        "no_matching_recommendations",
     }:
         return status.HTTP_409_CONFLICT
     return status.HTTP_422_UNPROCESSABLE_ENTITY
@@ -228,3 +234,73 @@ def get_assessment_scores(assessment_id: UUID, session: Session = Depends(get_se
         return ScoringService(session).get_scores(assessment_id)
     except ValueError as exc:
         raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.post(
+    "/pbhs/assessments/{assessment_id}/recommendations/generate",
+    response_model=RecommendationPortfolioRead,
+)
+def generate_recommendations(assessment_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return RecommendationService(session).generate_recommendations(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.get(
+    "/pbhs/assessments/{assessment_id}/recommendations",
+    response_model=list[RecommendationRead],
+)
+def list_recommendations(assessment_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return RecommendationService(session).list_recommendations(assessment_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.get("/recommendations/{recommendation_id}", response_model=RecommendationRead)
+def get_recommendation(recommendation_id: UUID, session: Session = Depends(get_session)):
+    try:
+        return RecommendationService(session).get_recommendation(recommendation_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+
+
+@api_v1_router.get(
+    "/recommendations/{recommendation_id}/explain",
+    response_model=RecommendationExplanationRead,
+)
+def explain_recommendation(recommendation_id: UUID, session: Session = Depends(get_session)):
+    try:
+        recommendation = RecommendationService(session).get_recommendation(recommendation_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+    return {
+        "recommendation_id": recommendation.recommendation_id,
+        "recommendation_type": recommendation.recommendation_type,
+        "title": recommendation.title,
+        "rationale": recommendation.rationale,
+        "calculation_trace": recommendation.calculation_trace,
+        "priority_rationale": recommendation.priority_rationale,
+    }
+
+
+@api_v1_router.get(
+    "/recommendations/{recommendation_id}/evidence",
+    response_model=RecommendationEvidenceRead,
+)
+def get_recommendation_evidence(
+    recommendation_id: UUID,
+    session: Session = Depends(get_session),
+):
+    try:
+        recommendation = RecommendationService(session).get_recommendation(recommendation_id)
+    except ValueError as exc:
+        raise HTTPException(status_code=assessment_error_status(str(exc)), detail=str(exc)) from exc
+    return {
+        "recommendation_id": recommendation.recommendation_id,
+        "recommendation_type": recommendation.recommendation_type,
+        "capability_score_ids": recommendation.capability_score_ids,
+        "supporting_evidence_ids": recommendation.supporting_evidence_ids,
+        "triggered_capabilities": recommendation.triggered_capabilities,
+    }

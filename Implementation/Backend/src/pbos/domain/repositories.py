@@ -12,6 +12,7 @@ if TYPE_CHECKING:
         PBHSAssessment,
         PBHSQuestion,
         PBHSResponse,
+        Recommendation,
     )
 
 
@@ -90,4 +91,26 @@ class CapabilityScoreRepository(ABC):
         assessment_id: UUID,
         capability: str,
     ) -> CapabilityScore | None:
+        raise NotImplementedError
+
+
+class RecommendationRepository(ABC):
+    @abstractmethod
+    def add(self, recommendation: Recommendation) -> Recommendation:
+        raise NotImplementedError
+
+    @abstractmethod
+    def list_for_assessment(self, assessment_id: UUID) -> list[Recommendation]:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get(self, recommendation_id: UUID) -> Recommendation | None:
+        raise NotImplementedError
+
+    @abstractmethod
+    def get_for_type(
+        self,
+        assessment_id: UUID,
+        recommendation_type: str,
+    ) -> Recommendation | None:
         raise NotImplementedError

@@ -11,6 +11,7 @@ from pbos.domain.repositories import (
     CapabilityScoreRepository,
     EvidenceRepository,
     QuestionRepository,
+    RecommendationRepository,
 )
 from pbos.infrastructure.database.models import (
     Business,
@@ -20,6 +21,7 @@ from pbos.infrastructure.database.models import (
     PBHSAssessmentQuestion,
     PBHSQuestion,
     PBHSResponse,
+    Recommendation,
     coerce_uuid,
 )
 
@@ -181,5 +183,37 @@ class SqlAlchemyCapabilityScoreRepository(CapabilityScoreRepository):
         statement = select(CapabilityScore).where(
             CapabilityScore.assessment_id == coerce_uuid(assessment_id),
             CapabilityScore.capability == capability,
+        )
+        return self.session.scalars(statement).first()
+
+
+class SqlAlchemyRecommendationRepository(RecommendationRepository):
+    def __init__(self, session: Session) -> None:
+        self.session = session
+
+    def add(self, recommendation: Recommendation) -> Recommendation:
+        self.session.add(recommendation)
+        self.session.flush()
+        return recommendation
+
+    def list_for_assessment(self, assessment_id: UUID) -> list[Recommendation]:
+        statement = (
+            select(Recommendation)
+            .where(Recommendation.assessment_id == coerce_uuid(assessment_id))
+            .order_by(Recommendation.priority_score.desc(), Recommendation.recommendation_type)
+        )
+        return list(self.session.scalars(statement))
+
+    def get(self, recommendation_id: UUID) -> Recommendation | None:
+        return self.session.get(Recommendation, coerce_uuid(recommendation_id))
+
+    def get_for_type(
+        self,
+        assessment_id: UUID,
+        recommendation_type: str,
+    ) -> Recommendation | None:
+        statement = select(Recommendation).where(
+            Recommendation.assessment_id == coerce_uuid(assessment_id),
+            Recommendation.recommendation_type == recommendation_type,
         )
         return self.session.scalars(statement).first()

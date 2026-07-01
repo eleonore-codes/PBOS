@@ -3,7 +3,15 @@ from typing import Any
 
 from pydantic import BaseModel, ConfigDict, Field
 
-from pbos.domain.enums import AssessmentStatus, EvidenceSource, QuestionStatus
+from pbos.domain.enums import (
+    AssessmentStatus,
+    EvidenceSource,
+    QuestionStatus,
+    RecommendationCategory,
+    RecommendationExecutionPath,
+    RecommendationStatus,
+    RecommendationType,
+)
 
 
 class UserCreate(BaseModel):
@@ -170,3 +178,77 @@ class AssessmentScoreRead(BaseModel):
     calculation_method: str
     scored_at: datetime
     capability_scores: list[CapabilityScoreRead]
+
+
+class RecommendationRead(BaseModel):
+    model_config = ConfigDict(from_attributes=True)
+
+    recommendation_id: str
+    assessment_id: str
+    rule_id: str
+    rule_version: str
+    template_id: str
+    template_version: str
+    recommendation_type: RecommendationType
+    category: RecommendationCategory
+    title: str
+    description: str
+    priority: str
+    priority_score: float
+    priority_rationale: str
+    confidence: float
+    confidence_label: str
+    risk_score: float
+    risk_label: str
+    expected_business_return: dict[str, Any]
+    expected_life_return: dict[str, Any]
+    human_time_required: dict[str, Any]
+    human_signature_impact: dict[str, Any]
+    triggered_capabilities: list[str]
+    capability_score_ids: list[str]
+    supporting_evidence_ids: list[str]
+    rationale: dict[str, Any]
+    calculation_trace: dict[str, Any]
+    recommended_execution_path: RecommendationExecutionPath
+    success_criteria: list[str]
+    status: RecommendationStatus
+    created_at: datetime
+    generated_at: datetime
+
+
+class RecommendationGenerationRunRead(BaseModel):
+    run_id: str
+    assessment_id: str
+    engine_version: str
+    rule_set_version: str
+    started_at: datetime
+    completed_at: datetime | None
+    status: str
+    error_summary: str | None
+
+
+class RecommendationPortfolioRead(BaseModel):
+    assessment_id: str
+    status: AssessmentStatus
+    engine_version: str
+    rule_set_version: str
+    generated_at: datetime
+    recommendations: list[RecommendationRead]
+    generation_run: RecommendationGenerationRunRead
+
+
+class RecommendationExplanationRead(BaseModel):
+    recommendation_id: str
+    recommendation_type: RecommendationType
+    title: str
+    rationale: dict[str, Any]
+    calculation_trace: dict[str, Any]
+    priority_rationale: str
+
+
+class RecommendationEvidenceRead(BaseModel):
+    recommendation_id: str
+    recommendation_type: RecommendationType
+    capability_score_ids: list[str]
+    supporting_evidence_ids: list[str]
+    triggered_capabilities: list[str]
